@@ -2,13 +2,18 @@ services:
   redis:
     image: redis:6
     ports:
-      - '6379:6379'
+      - "6379:6379"
+    command: redis-server --requirepass 'MegaTest' --tls-port 6379 --port 0 --tls-cert-file /certs/certificate.pem --tls-key-file /certs/certificate.key --tls-auth-clients no
+    volumes:
+     - ./certs:/certs
 
   celery:
     build: .
     command: celery -A tasks worker -P gevent -c 50 -l info
     depends_on:
       - redis
+    volumes:
+     - ./src:/app
 
   app:
     build: .
@@ -16,3 +21,5 @@ services:
       - redis
       - celery
     command: python main.py
+    volumes:
+     - ./src:/app
